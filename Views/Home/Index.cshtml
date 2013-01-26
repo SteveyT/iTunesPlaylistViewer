@@ -1,11 +1,24 @@
 ﻿@{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "iTunes Playlist Viewer";
 }
-
-<h1>iTunes Playlist Viewer</h1>
-<p>Select an iTunes playlist to view:</p>
-@using (Html.BeginForm("Upload","Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
-{
-    <p><input id="xmlFile" type="file" accept="text/xml" /></p>
-    <p><input id="xmlUpload" type="submit" value="View" /></p>    
-}
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#file').live("change", function () {
+            if ($(this).val()) {
+                $('#xmlUpload').removeAttr("disabled");
+            } else {
+                $('#xmlUpload').attr("disabled", "disabled");
+            }
+        });
+    });
+</script>
+<div class="hero-unit">
+        <h1>iTunes Playlist Viewer</h1>
+        <p>Select an iTunes playlist to view:</p>
+        <p>* No playlists are saved just parsed in realtime then displayed on screen.</p>
+        @using (Html.BeginForm("Upload","Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            <p><input id="file" name="file" type="file" class="btn btn-inverse" accept="text/xml" /></p>
+            <p><input id="xmlUpload" type="submit" class="btn btn-inverse" disabled="disabled" value="View" /></p>    
+        }
+</div>
