@@ -4,9 +4,10 @@
 <script type="text/javascript">
     $(document).ready(function() {
         $('#file').live("change", function () {
-            if ($(this).val()) {
+            if ($(this).val() && $(this).val().split('.').pop()=='xml') {
                 $('#xmlUpload').removeAttr("disabled");
             } else {
+                alert('You must select a file with a .xml file extension!');
                 $('#xmlUpload').attr("disabled", "disabled");
             }
         });
