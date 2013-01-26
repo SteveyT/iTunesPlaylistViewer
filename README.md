@@ -1,0 +1,1 @@
+﻿Fed up with iTunes not showing me what tracks were discarded when importing a playlist into iTunes so I made a viewer
