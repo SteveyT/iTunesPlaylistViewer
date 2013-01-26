@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Xml;
+using System.Xml.Schema;
 using iTunesPlaylistViewer.Models;
 
 namespace iTunesPlaylistViewer.Controllers
@@ -104,20 +106,61 @@ namespace iTunesPlaylistViewer.Controllers
         }
 
         [HttpPost]
-        public ActionResult Upload(FileInputModel model)
+        public ActionResult Upload(HttpPostedFileBase file)
         {
+            var output = new StringBuilder();
             if (ModelState.IsValid)
             {
-                var xmldoc = new XmlDocument();
-                using (var memoryStream = new MemoryStream())
+                var settings = new XmlReaderSettings();
+                settings.IgnoreComments = true;
+                settings.IgnoreWhitespace = true;
+                settings.IgnoreComments = true;
+                settings.ValidationType = ValidationType.None;
+                settings.DtdProcessing = DtdProcessing.Ignore;
+
+                using (var reader = XmlReader.Create(file.InputStream, settings))
                 {
-                    model.File.InputStream.CopyTo(memoryStream);
-                    xmldoc.Load(memoryStream);
+                    var ws = new XmlWriterSettings {Indent = true};
+
+                    using (var writer = XmlWriter.Create(output, ws))
+                    {
+                        while (reader.Read())
+                        {
+                            switch (reader.NodeType)
+                            {
+                                case XmlNodeType.Element:
+                                    writer.WriteStartElement(reader.Name);
+                                    break;
+                                case XmlNodeType.Text:
+                                    writer.WriteString(reader.Value);
+                                    break;
+                                case XmlNodeType.XmlDeclaration:
+                                case XmlNodeType.ProcessingInstruction:
+                                    writer.WriteProcessingInstruction(reader.Name, reader.Value);
+                                    break;
+                                case XmlNodeType.Comment:
+                                    writer.WriteComment(reader.Value);
+                                    break;
+                                case XmlNodeType.EndElement:
+                                    writer.WriteFullEndElement();
+                                    break;
+                            }
+                        }
+                    }
                 }
-                if (xmldoc.Validate())
-                
             }
+
+            var xmldoc = new XmlDocument();
+            xmldoc.LoadXml(output.ToString());
+
             return View();
+        }
+        private static void ValidationCallBack(object sender, ValidationEventArgs args)
+        {
+            if (args.Severity == XmlSeverityType.Warning)
+                throw new XmlSchemaException("\tWarning: Matching schema not found.  No validation occurred." + args.Message);
+            
+            throw new XmlSchemaValidationException("\tValidation error: " + args.Message);
         }
     }
 }
