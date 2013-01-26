@@ -8,7 +8,10 @@
 header, footer, nav, section {
     display: block;
 }
-
+.padding {
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+}
 
 /* Styles for basic forms
 -----------------------------------------------------------*/

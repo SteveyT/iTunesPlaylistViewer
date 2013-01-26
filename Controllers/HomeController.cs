@@ -152,15 +152,79 @@ namespace iTunesPlaylistViewer.Controllers
 
             var xmldoc = new XmlDocument();
             xmldoc.LoadXml(output.ToString());
-
-            return View();
-        }
-        private static void ValidationCallBack(object sender, ValidationEventArgs args)
-        {
-            if (args.Severity == XmlSeverityType.Warning)
-                throw new XmlSchemaException("\tWarning: Matching schema not found.  No validation occurred." + args.Message);
             
-            throw new XmlSchemaValidationException("\tValidation error: " + args.Message);
+            var model = new List<Track>();
+
+            foreach (XmlNode node in xmldoc.SelectNodes("//plist//dict/dict"))
+            {
+                var track = parseTrack(node);
+                model.Add(track);
+            }
+            
+            return View(model);
         }
+
+        private Track parseTrack(XmlNode node)
+        {
+            var mover = -1;
+            var kvp = new Dictionary<string, string>();
+
+            foreach (XmlNode n in node)
+            {
+                if (n.Name == "key")
+                kvp.Add(node.ChildNodes[++mover].InnerText, node.ChildNodes[++mover].InnerText);
+            }
+
+            var track = new Track();
+
+            track.TrackId = kvp.ContainsKey("Track ID") ? int.Parse(kvp["Track ID"]) : 0;
+            track.Name = kvp.ContainsKey("Name") ? kvp["Name"] : string.Empty;
+            track.Artist = kvp.ContainsKey("Artist") ? kvp["Artist"] : string.Empty;
+            track.Album = kvp.ContainsKey("Album") ? kvp["Album"] : string.Empty;
+            track.Genre = kvp.ContainsKey("Genre") ? kvp["Genre"] : string.Empty;
+            track.Kind = kvp.ContainsKey("Kind") ? kvp["Kind"] : string.Empty;
+            track.Size = kvp.ContainsKey("Size") ? int.Parse(kvp["Size"]) : 0;
+            track.TotalTime = kvp.ContainsKey("Total Time") ? int.Parse(kvp["Total Time"]) : 0;
+            track.Year = kvp.ContainsKey("Year") ? int.Parse(kvp["Year"]) : 0;
+            track.DateModified = kvp.ContainsKey("Date Modified") ? DateTime.Parse(kvp["Date Modified"]) : new DateTime();
+            track.DateAdded = kvp.ContainsKey("Date Added") ? DateTime.Parse(kvp["Date Added"]) : new DateTime();
+            track.BitRate = kvp.ContainsKey("Bit Rate") ? int.Parse(kvp["Bit Rate"]) : 0;
+            track.SampleRate = kvp.ContainsKey("Sample Rate") ? int.Parse(kvp["Sample Rate"]) : 0;
+            track.Comments = kvp.ContainsKey("Comments") ? kvp["Comments"] : string.Empty;
+            track.PlayCount = kvp.ContainsKey("Play Count") ? int.Parse(kvp["Play Count"]) : 0;
+            track.PlayDate = kvp.ContainsKey("Play Date") ? Int64.Parse(kvp["Play Date"]) : 0;
+            track.PlayDateUtc = kvp.ContainsKey("Play Date UTC") ? DateTime.Parse(kvp["Play Date UTC"]) : new DateTime();
+            track.SkipCount = kvp.ContainsKey("Skip Count") ? int.Parse(kvp["Skip Count"]) : 0;
+            track.SkipDate = kvp.ContainsKey("Skip Date") ? DateTime.Parse(kvp["Skip Date"]) : new DateTime();
+            track.Rating = kvp.ContainsKey("Rating") ? int.Parse(kvp["Rating"]) : 0;
+            track.AlbumRating = kvp.ContainsKey("Album Rating") ? int.Parse(kvp["Album Rating"]) : 0;
+            track.TrackNumber = kvp.ContainsKey("Track Number") ? int.Parse(kvp["Track Number"]) : 0;
+
+            return track;
+        }
+
+        public List<string> AllKeys()
+        {
+            var list = new List<string>
+                {
+                    "Track ID",
+                    "Name",
+                    "Artist",
+                    "Genre",
+                    "Kind",
+                    "Album",
+                    "Size",
+                    "Total Time",
+                    "Year",
+                    "Date Modified",
+                    "Date Added",
+                    "Bit Rate",
+                    "Sample Rate",
+                    "Play Count",
+                    "Rating",
+                    "Album Rating"
+                };
+            return list;
+        } 
     }
 }
